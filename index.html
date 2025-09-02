@@ -795,18 +795,18 @@
             });
         }
 
-        function updateFormulas() {
-            const mass = parseFloat(document.getElementById('mass').value) / 1000;
-            const height = parseFloat(document.getElementById('height').value);
-            const velocity = Math.sqrt(2 * GRAVITY * height);
-            const ke = 0.5 * mass * velocity * velocity;
-            
-            document.getElementById('fHeight').textContent = height.toFixed(1);
-            document.getElementById('fMass').textContent = mass.toFixed(3);
-            document.getElementById('fVelCalc').textContent = velocity.toFixed(2);
-            document.getElementById('fVel').textContent = velocity.toFixed(2);
-            document.getElementById('fKE').textContent = ke.toFixed(2);
-        }
+function updateFormulas() {
+    const material = materials[state.material];
+
+    // This new logic checks if a material exists before trying to get its properties.
+    const stiffness = material ? material.stiffness : 0;
+    const damping = material ? material.damping : 0;
+    const thickness = document.getElementById('caseThickness').value;
+
+    document.getElementById('formula_k').textContent = stiffness.toFixed(0);
+    document.getElementById('formula_c').textContent = damping.toFixed(1);
+    document.getElementById('formula_d').textContent = thickness;
+}
 
         function selectMaterial(event, mat) {
             state.material = mat;
@@ -869,32 +869,72 @@
             document.getElementById('slowToggle').classList.toggle('active');
         }
 
-        function drawStaticScene() {
-            simCtx.fillStyle = '#1e293b';
-            simCtx.fillRect(0, 0, simCanvas.width, simCanvas.height);
-            
-            const groundY = simCanvas.height - 60;
-            simCtx.fillStyle = '#334155';
-            simCtx.fillRect(0, groundY, simCanvas.width, 60);
-            
-            simCtx.strokeStyle = 'rgba(148,163,184,0.1)';
-            simCtx.lineWidth = 1;
-            for (let y = 0; y < simCanvas.height; y += 30) {
-                simCtx.beginPath();
-                simCtx.moveTo(0, y);
-                simCtx.lineTo(simCanvas.width, y);
-                simCtx.stroke();
-            }
-            
-            simCtx.fillStyle = '#64748b';
-            simCtx.font = '10px sans-serif';
-            for (let h = 0; h <= 3; h += 0.5) {
-                const y = groundY - h * PIXELS_PER_METER;
-                if (y > 0) {
-                    simCtx.fillText(h + 'm', 5, y);
-                }
-            }
+       // REPLACE your entire function with this one.
+function drawStaticScene() {
+    const material = materials[state.material];
+
+    // Clear the canvas and draw the background/grid
+    simCtx.clearRect(0, 0, simCanvas.width, simCanvas.height);
+    simCtx.fillStyle = '#1e293b';
+    simCtx.fillRect(0, 0, simCanvas.width, simCanvas.height);
+    
+    const groundY = simCanvas.height - 60;
+    simCtx.fillStyle = '#334155';
+    simCtx.fillRect(0, groundY, simCanvas.width, 60);
+    
+    simCtx.strokeStyle = 'rgba(148,163,184,0.1)';
+    simCtx.lineWidth = 1;
+    for (let y = 0; y < simCanvas.height; y += 30) {
+        simCtx.beginPath();
+        simCtx.moveTo(0, y);
+        simCtx.lineTo(simCanvas.width, y);
+        simCtx.stroke();
+    }
+    
+    simCtx.fillStyle = '#64748b';
+    simCtx.font = '10px sans-serif';
+    for (let h = 0; h <= 3; h += 0.5) {
+        const y = groundY - h * PIXELS_PER_METER;
+        if (y > 0) {
+            simCtx.fillText(h + 'm', 5, y);
         }
+    }
+
+    // --- Start of Phone Drawing Logic ---
+
+    // This is the starting position of the phone, taken from the physics state.
+    const phoneYPosition = physics.y;
+
+    // 1. Draw the CASE first (only if a material is selected)
+    if (material) {
+        const caseThickness = parseFloat(document.getElementById('caseThickness').value) / 1000 * PIXELS_PER_METER;
+        simCtx.fillStyle = material.color;
+        simCtx.fillRect(
+            (simCanvas.width / 2) - (PHONE_WIDTH / 2) - caseThickness,
+            phoneYPosition - (PHONE_HEIGHT / 2) - caseThickness,
+            PHONE_WIDTH + (caseThickness * 2),
+            PHONE_HEIGHT + (caseThickness * 2)
+        );
+    }
+
+    // 2. Draw the PHONE BODY on top of the case
+    simCtx.fillStyle = '#334155';
+    simCtx.fillRect(
+        (simCanvas.width / 2) - (PHONE_WIDTH / 2),
+        phoneYPosition - (PHONE_HEIGHT / 2),
+        PHONE_WIDTH,
+        PHONE_HEIGHT
+    );
+
+    // 3. Draw the PHONE SCREEN on top of the body
+    simCtx.fillStyle = '#0f172a';
+    simCtx.fillRect(
+        (simCanvas.width / 2) - (PHONE_WIDTH / 2) + 5,
+        phoneYPosition - (PHONE_HEIGHT / 2) + 5,
+        PHONE_WIDTH - 10,
+        PHONE_HEIGHT - 10
+    );
+}
 
         function runSimulation() {
             if (state.animationId) {
