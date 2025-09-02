@@ -1315,6 +1315,16 @@
                 velocityHistory: [],
                 timeHistory: []
             };
+
+            document.getElementById('peakForce').textContent = '---';
+            document.getElementById('phoneStatus').textContent = '---';
+            document.getElementById('impactTime').textContent = '---';
+            document.getElementById('energyAbsorb ed').textContent = '---';
+            document.getElementById('phoneStatus').style.color = 'var(--text-primary)';
+            
+            updateFormulas();
+            forceCtx.clearRect(0, 0, forceChart.width, forceChart.height);
+            velocityCtx.clearRect(0, 0, velocityChart.width, velocityChart.height);
             
             document.getElementById('liveHeight').textContent = '0.00 m';
             document.getElementById('liveVelocity').textContent = '0.00 m/s';
@@ -1347,23 +1357,32 @@
             a.click();
         }
 
-        function exportJSON() {
-            if (state.trials.length === 0) {
-                alert('No data to export!');
-                return;
-            }
-            
-            const exportData = {
-                date: new Date().toISOString(),
-                breakingThreshold: PHONE_BREAK_FORCE,
-                trials: state.trials,
-                summary: {
-                    totalTrials: state.trials.length,
-                    brokenPhones: state.trials.filter(t => t.broken).length,
-                    safeDrops: state.trials.filter(t => !t.broken).length,
-                    lowestSafeForce: Math.min(...state.trials.filter(t => !t.broken).map(t => t.force))
-                }
-            };
+function exportJSON() {
+    if (state.trials.length === 0) {
+        alert('No data to export!');
+        return;
+    }
+    const safeTrials = state.trials.filter(t => !t.broken);
+    const lowestSafeForce = safeTrials.length > 0 ? Math.min(...safeTrials.map(t => t.force)) : null;
+    const exportData = {
+        date: new Date().toISOString(),
+        breakingThreshold: PHONE_BREAK_FORCE,
+        trials: state.trials,
+        summary: {
+            totalTrials: state.trials.length,
+            brokenPhones: state.trials.filter(t => t.broken).length,
+            safeDrops: state.trials.filter(t => !t.broken).length,
+            // REPLACE THE OLD LINE WITH THIS NEW VARIABLE
+            lowestSafeForce: lowestSafeForce 
+        }
+    };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `phone_drop_data_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+}
             
             const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
