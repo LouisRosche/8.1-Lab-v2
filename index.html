@@ -80,7 +80,7 @@
             margin: 0 auto;
             padding: 1rem;
             display: grid;
-            grid-template-columns: 320px 1fr 360px;
+            grid-template-columns: 360px 1fr 360px;
             gap: 1rem;
             min-height: calc(100vh - 140px);
         }
@@ -999,11 +999,12 @@
             physics.velocityHistory.push(physics.currentVelocity);
             physics.timeHistory.push(physics.time);
             
-            if (physics.forceHistory.length > 200) {
-                physics.forceHistory.shift();
-                physics.velocityHistory.shift();
-                physics.timeHistory.shift();
-            }
+// Commenting out to attempt to fix over time visualization
+            //            if (physics.forceHistory.length > 200) {
+//                physics.forceHistory.shift();
+//                physics.velocityHistory.shift();
+//                physics.timeHistory.shift();
+//            }
             
             drawFrame(mass, dropHeight, thickness, material);
             updateLiveDisplays(mass);
