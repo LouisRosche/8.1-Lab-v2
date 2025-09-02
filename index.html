@@ -493,10 +493,10 @@
             <div class="panel-title">⚙️ Controls</div>
 
             <div class="preset-buttons">
-                <button class="preset-btn" onclick="loadPreset('safe')">✅ Safe Drop</button>
-                <button class="preset-btn" onclick="loadPreset('risky')">⚠️ Risky Drop</button>
-                <button class="preset-btn" onclick="loadPreset('danger')">⛔ Danger Zone</button>
-                <button class="preset-btn" onclick="loadPreset('materials')">🧪 Test Materials</button>
+                <button class="preset-btn" onclick="loadPreset(event, 'safe')">✅ Safe Drop</button>
+                <button class="preset-btn" onclick="loadPreset(event, 'risky')">⚠️ Risky Drop</button>
+                <button class="preset-btn" onclick="loadPreset(event, 'danger')">⛔ Danger Zone</button>
+                <button class="preset-btn" onclick="loadPreset(event, 'materials')">🧪 Test Materials</button>
             </div>
 
             <div class="slider-control">
@@ -519,12 +519,12 @@
                 Phone Case Material
             </div>
             <div class="material-grid">
-                <button class="material-btn selected" onclick="selectMaterial('None')">None</button>
-                <button class="material-btn" onclick="selectMaterial('Foam')">Foam</button>
-                <button class="material-btn" onclick="selectMaterial('Gel')">Gel</button>
-                <button class="material-btn" onclick="selectMaterial('Air')">Air</button>
-                <button class="material-btn" onclick="selectMaterial('Rubber')">Rubber</button>
-                <button class="material-btn" onclick="selectMaterial('Spring')">Spring</button>
+                <button class="material-btn selected" onclick="selectMaterial(event, 'None')">None</button>
+                <button class="material-btn" onclick="selectMaterial(event, 'Foam')">Foam</button>
+                <button class="material-btn" onclick="selectMaterial(event, 'Gel')">Gel</button>
+                <button class="material-btn" onclick="selectMaterial(event, 'Air')">Air</button>
+                <button class="material-btn" onclick="selectMaterial(event, 'Rubber')">Rubber</button>
+                <button class="material-btn" onclick="selectMaterial(event, 'Spring')">Spring</button>
             </div>
 
             <div class="slider-control" style="margin-top: 1rem;">
@@ -808,7 +808,7 @@
             document.getElementById('fKE').textContent = ke.toFixed(2);
         }
 
-        function selectMaterial(mat) {
+        function selectMaterial(event, mat) {
             state.material = mat;
             document.querySelectorAll('.material-btn').forEach(btn => {
                 btn.classList.remove('selected');
@@ -828,7 +828,7 @@
             document.getElementById('thicknessValue').textContent = thicknessDefaults[mat] + ' mm';
         }
 
-        function loadPreset(type) {
+        function loadPreset(event, type) {
             const presets = {
                 safe: { mass: 150, height: 0.5, material: 'foam', thickness: 20 },
                 risky: { mass: 200, height: 1.5, material: 'rubber', thickness: 10 },
@@ -897,8 +897,10 @@
         }
 
         function runSimulation() {
-            if (state.isRunning) return;
-            
+            if (state.animationId) {
+    cancelAnimationFrame(state.animationId);
+}
+            state.isRunning = false;           
             state.isRunning = true;
             state.phoneBroken = false;
             document.getElementById('runBtn').disabled = true;
