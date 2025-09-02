@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collision Forces Lab - OpenSciEd Unit 8.1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #60a5fa;
+            --secondary: #34d399;
+            --accent: #fbbf24;
+            --danger: #f87171;
+            --dark: #0f172a;
+            --dark-panel: #1e293b;
+            --dark-input: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --success: #4ade80;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        .app-header {
+            background: var(--dark-panel);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .app-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .learning-goals {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: var(--dark-panel);
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        .goal-badge {
+            padding: 0.25rem 0.75rem;
+            background: var(--dark-input);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            border: 1px solid var(--border);
+        }
+
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 320px 1fr 360px;
+            gap: 1rem;
+            min-height: calc(100vh - 140px);
+        }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                max-width: 900px;
+            }
+        }
+
+        .panel {
+            background: var(--dark-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            height: fit-content;
+        }
+
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .preset-btn {
+            padding: 0.5rem;
+            background: var(--dark-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .preset-btn:hover {
+            background: var(--primary);
+            color: var(--dark);
+        }
+
+        .preset-btn.active {
+            background: var(--primary);
+            color: var(--dark);
+        }
+
+        .slider-control {
+            margin-bottom: 1rem;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.25rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .slider-value {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            background: var(--dark-input);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .material-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.4rem;
+        }
+
+        .material-btn {
+            padding: 0.4rem;
+            background: var(--dark-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .material-btn.selected {
+            background: var(--secondary);
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        .canvas-container {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .live-data-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(15,23,42,0.95);
+            padding: 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            border: 1px solid var(--border);
+        }
+
+        .live-data-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin: 0.25rem 0;
+        }
+
+        .live-data-label {
+            color: var(--text-secondary);
+        }
+
+        .live-data-value {
+            font-weight: 600;
+            font-family: monospace;
+        }
+
+        .formula-box {
+            background: var(--dark-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin: 0.75rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+
+        .formula {
+            color: var(--primary);
+            margin: 0.25rem 0;
+            text-align: center;
+        }
+
+        .chart-container {
+            height: 180px;
+            background: var(--dark-input);
+            border-radius: 6px;
+            padding: 0.5rem;
+            position: relative;
+            margin-top: 0.75rem;
+            overflow: hidden;
+        }
+
+        .chart-title {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--dark);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: var(--dark);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--dark);
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result-card {
+            background: var(--dark-input);
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            border-left: 3px solid var(--primary);
+        }
+
+        .result-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .result-unit {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .trials-table {
+            background: var(--dark-input);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 0.75rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .trials-header {
+            display: grid;
+            grid-template-columns: 30px 1fr 70px 70px 40px;
+            padding: 0.5rem;
+            background: var(--dark);
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            position: sticky;
+            top: 0;
+        }
+
+        .trial-row {
+            display: grid;
+            grid-template-columns: 30px 1fr 70px 70px 40px;
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.75rem;
+            align-items: center;
+        }
+
+        .trial-row:hover {
+            background: rgba(96,165,250,0.1);
+        }
+
+        .trial-row.best {
+            background: rgba(52,211,153,0.1);
+        }
+
+        .delete-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+
+        .export-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .switch {
+            position: relative;
+            width: 40px;
+            height: 20px;
+            background: var(--dark-input);
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .switch.active {
+            background: var(--primary);
+        }
+
+        .switch-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .switch.active .switch-slider {
+            transform: translateX(20px);
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, var(--accent), #fb923c);
+            color: var(--dark);
+            padding: 0.5rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            margin-top: 0.75rem;
+            font-weight: 500;
+        }
+
+        .break-popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(248, 113, 113, 0.95);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            display: none;
+            z-index: 10;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translate(-50%, -50%); }
+            25% { transform: translate(-48%, -50%); }
+            75% { transform: translate(-52%, -50%); }
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <div class="header-content">
+            <div class="app-title">
+                <span>⚡</span>
+                <span>Collision Forces Laboratory</span>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">OpenSciEd Unit 8.1</div>
+        </div>
+    </div>
+
+    <div class="learning-goals">
+        <div style="color: var(--text-secondary); font-size: 0.85rem;">Core Concepts:</div>
+        <div class="goal-badge">F = ma</div>
+        <div class="goal-badge">KE = ½mv²</div>
+        <div class="goal-badge">p = mv</div>
+        <div class="goal-badge">J = FΔt</div>
+        <div class="goal-badge">Energy Transfer</div>
+        <div class="goal-badge">Material Properties</div>
+        <div class="goal-badge">Phone Safety Threshold: 200N</div>
+    </div>
+
+    <div class="main-container">
+        <!-- Controls Panel -->
+        <div class="panel">
+            <div class="panel-title">⚙️ Controls</div>
+
+            <div class="preset-buttons">
+                <button class="preset-btn" onclick="loadPreset('safe')">✅ Safe Drop</button>
+                <button class="preset-btn" onclick="loadPreset('risky')">⚠️ Risky Drop</button>
+                <button class="preset-btn" onclick="loadPreset('danger')">⛔ Danger Zone</button>
+                <button class="preset-btn" onclick="loadPreset('materials')">🧪 Test Materials</button>
+            </div>
+
+            <div class="slider-control">
+                <div class="slider-label">
+                    <span>Phone Mass</span>
+                    <span class="slider-value" id="massValue">150 g</span>
+                </div>
+                <input type="range" class="slider" id="mass" min="100" max="300" value="150" step="10">
+            </div>
+
+            <div class="slider-control">
+                <div class="slider-label">
+                    <span>Drop Height</span>
+                    <span class="slider-value" id="heightValue">1.5 m</span>
+                </div>
+                <input type="range" class="slider" id="height" min="0.5" max="3.0" value="1.5" step="0.1">
+            </div>
+
+            <div style="margin-top: 1rem; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 600;">
+                Phone Case Material
+            </div>
+            <div class="material-grid">
+                <button class="material-btn selected" onclick="selectMaterial('none')">None</button>
+                <button class="material-btn" onclick="selectMaterial('foam')">Foam</button>
+                <button class="material-btn" onclick="selectMaterial('gel')">Gel</button>
+                <button class="material-btn" onclick="selectMaterial('air')">Air</button>
+                <button class="material-btn" onclick="selectMaterial('rubber')">Rubber</button>
+                <button class="material-btn" onclick="selectMaterial('spring')">Spring</button>
+            </div>
+
+            <div class="slider-control" style="margin-top: 1rem;">
+                <div class="slider-label">
+                    <span>Case Thickness</span>
+                    <span class="slider-value" id="thicknessValue">10 mm</span>
+                </div>
+                <input type="range" class="slider" id="thickness" min="0" max="30" value="10" step="1">
+            </div>
+
+            <div class="toggle-switch">
+                <span style="font-size: 0.8rem;">Show Forces</span>
+                <div class="switch" id="forceToggle" onclick="toggleForces()">
+                    <div class="switch-slider"></div>
+                </div>
+            </div>
+
+            <div class="toggle-switch">
+                <span style="font-size: 0.8rem;">Slow Motion</span>
+                <div class="switch" id="slowToggle" onclick="toggleSlow()">
+                    <div class="switch-slider"></div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="runBtn" onclick="runSimulation()">▶ RUN</button>
+                <button class="btn btn-danger" onclick="resetSimulation()">↺ RESET</button>
+            </div>
+
+            <div class="info-box">
+                💡 Phone screens typically break at forces above 200N!
+            </div>
+        </div>
+
+        <!-- Simulation Panel -->
+        <div class="panel">
+            <div class="panel-title">🔬 Phone Drop Simulation</div>
+
+            <div class="canvas-container">
+                <canvas id="simCanvas"></canvas>
+                <div class="live-data-overlay">
+                    <div style="font-weight: 600; margin-bottom: 0.25rem;">Live Data</div>
+                    <div class="live-data-item">
+                        <span class="live-data-label">Height:</span>
+                        <span class="live-data-value" id="liveHeight" style="color: var(--accent);">1.50 m</span>
+                    </div>
+                    <div class="live-data-item">
+                        <span class="live-data-label">Velocity:</span>
+                        <span class="live-data-value" id="liveVelocity" style="color: var(--primary);">0.00 m/s</span>
+                    </div>
+                    <div class="live-data-item">
+                        <span class="live-data-label">KE:</span>
+                        <span class="live-data-value" id="liveKE" style="color: var(--secondary);">0.00 J</span>
+                    </div>
+                    <div class="live-data-item">
+                        <span class="live-data-label">Force:</span>
+                        <span class="live-data-value" id="liveForce" style="color: var(--danger);">0.0 N</span>
+                    </div>
+                </div>
+                <div class="break-popup" id="breakPopup">
+                    💔 PHONE BROKEN!<br>
+                    <span style="font-size: 0.8rem;" id="breakDetails"></span>
+                </div>
+            </div>
+
+            <div class="formula-box">
+                <div class="formula">Impact velocity: v = √(2gh) = √(2 × 9.81 × <span id="fHeight">1.5</span>) = <span id="fVelCalc">5.42</span> m/s</div>
+                <div class="formula">Impact KE: ½ × <span id="fMass">0.150</span> kg × <span id="fVel">5.42</span>² = <span id="fKE">2.20</span> J</div>
+                <div class="formula">Peak Force: F = <span id="fForceValue">0.0</span> N (<span id="fSafetyStatus" style="color: var(--success);">SAFE</span>)</div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Force over Time (Breaking Threshold: 200N)</div>
+                <canvas id="forceChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Velocity over Time</div>
+                <canvas id="velocityChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Results Panel -->
+        <div class="panel">
+            <div class="panel-title">📊 Results</div>
+
+            <div class="result-card">
+                <div class="result-label">Peak Force</div>
+                <div class="result-value">
+                    <span id="peakForce">---</span>
+                    <span class="result-unit">N</span>
+                </div>
+            </div>
+
+            <div class="result-card">
+                <div class="result-label">Phone Status</div>
+                <div class="result-value" style="font-size: 1.2rem;">
+                    <span id="phoneStatus">---</span>
+                </div>
+            </div>
+
+            <div class="result-card">
+                <div class="result-label">Impact Duration</div>
+                <div class="result-value">
+                    <span id="impactTime">---</span>
+                    <span class="result-unit">ms</span>
+                </div>
+            </div>
+
+            <div class="result-card">
+                <div class="result-label">Energy Absorbed</div>
+                <div class="result-value">
+                    <span id="energyAbsorbed">---</span>
+                    <span class="result-unit">%</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 1rem; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 600;">
+                Trial History
+            </div>
+            <div class="trials-table">
+                <div class="trials-header">
+                    <div>#</div>
+                    <div>Setup</div>
+                    <div>Force</div>
+                    <div>Status</div>
+                    <div>Del</div>
+                </div>
+                <div id="trialsBody"></div>
+            </div>
+
+            <div class="export-buttons">
+                <button class="btn btn-secondary" onclick="exportCSV()">Export CSV</button>
+                <button class="btn btn-secondary" onclick="exportJSON()">Export JSON</button>
+            </div>
+
+            <div class="chart-container" style="height: 150px;">
+                <div class="chart-title">Force Comparison (Red line = Breaking Threshold)</div>
+                <canvas id="comparisonChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Constants
+        const PHONE_BREAK_FORCE = 200; // Newtons
+        const GRAVITY = 9.81; // m/s²
+        const PIXELS_PER_METER = 100;
+
+        // Global state
+        let state = {
+            isRunning: false,
+            material: 'none',
+            trials: [],
+            trialCounter: 0,
+            showForces: false,
+            slowMotion: false,
+            animationId: null,
+            phoneBroken: false
+        };
+
+        // Physics state
+        let physics = {
+            y: 0,
+            vy: 0,
+            time: 0,
+            currentForce: 0,
+            maxForce: 0,
+            maxVelocity: 0,
+            impactStartTime: null,
+            impactEndTime: null,
+            bounceCount: 0,
+            totalEnergy: 0,
+            forceHistory: [],
+            velocityHistory: [],
+            timeHistory: []
+        };
+
+        // Material properties
+        const materials = {
+            none: {
+                stiffness: 200000,  // Very stiff (concrete-like)
+                damping: 0.8,       // High energy loss on impact
+                restitution: 0.1,   // Very little bounce
+                color: '#64748b'
+            },
+            foam: {
+                stiffness: 10000,
+                damping: 0.7,
+                restitution: 0.3,
+                color: '#fbbf24'
+            },
+            gel: {
+                stiffness: 15000,
+                damping: 0.65,
+                restitution: 0.35,
+                color: '#60a5fa'
+            },
+            air: {
+                stiffness: 5000,
+                damping: 0.6,
+                restitution: 0.4,
+                color: '#e0f2fe'
+            },
+            rubber: {
+                stiffness: 50000,
+                damping: 0.4,
+                restitution: 0.5,
+                color: '#c084fc'
+            },
+            spring: {
+                stiffness: 20000,
+                damping: 0.3,
+                restitution: 0.6,
+                color: '#34d399'
+            }
+        };
+
+        // Canvas setup
+        const simCanvas = document.getElementById('simCanvas');
+        const simCtx = simCanvas.getContext('2d');
+        const forceChart = document.getElementById('forceChart');
+        const forceCtx = forceChart.getContext('2d');
+        const velocityChart = document.getElementById('velocityChart');
+        const velocityCtx = velocityChart.getContext('2d');
+        const comparisonChart = document.getElementById('comparisonChart');
+        const comparisonCtx = comparisonChart.getContext('2d');
+
+        // Initialize
+        function initCanvas() {
+            const rect = simCanvas.parentElement.getBoundingClientRect();
+            simCanvas.width = rect.width;
+            simCanvas.height = 400;
+            
+            const chartWidth = Math.min(rect.width - 16, 600);
+            forceChart.width = chartWidth;
+            forceChart.height = 150;
+            velocityChart.width = chartWidth;
+            velocityChart.height = 150;
+            comparisonChart.width = chartWidth;
+            comparisonChart.height = 130;
+            
+            drawStaticScene();
+        }
+
+        window.addEventListener('load', () => {
+            initCanvas();
+            initSliders();
+            updateFormulas();
+        });
+
+        window.addEventListener('resize', initCanvas);
+
+        // Slider initialization
+        function initSliders() {
+            document.getElementById('mass').addEventListener('input', function() {
+                document.getElementById('massValue').textContent = this.value + ' g';
+                updateFormulas();
+            });
+            
+            document.getElementById('height').addEventListener('input', function() {
+                document.getElementById('heightValue').textContent = this.value + ' m';
+                updateFormulas();
+            });
+            
+            document.getElementById('thickness').addEventListener('input', function() {
+                document.getElementById('thicknessValue').textContent = this.value + ' mm';
+            });
+        }
+
+        function updateFormulas() {
+            const mass = parseFloat(document.getElementById('mass').value) / 1000;
+            const height = parseFloat(document.getElementById('height').value);
+            const velocity = Math.sqrt(2 * GRAVITY * height);
+            const ke = 0.5 * mass * velocity * velocity;
+            
+            document.getElementById('fHeight').textContent = height.toFixed(1);
+            document.getElementById('fMass').textContent = mass.toFixed(3);
+            document.getElementById('fVelCalc').textContent = velocity.toFixed(2);
+            document.getElementById('fVel').textContent = velocity.toFixed(2);
+            document.getElementById('fKE').textContent = ke.toFixed(2);
+        }
+
+        function selectMaterial(mat) {
+            state.material = mat;
+            document.querySelectorAll('.material-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+            
+            const thicknessDefaults = {
+                none: 0,
+                foam: 20,
+                gel: 15,
+                air: 25,
+                rubber: 10,
+                spring: 15
+            };
+            
+            document.getElementById('thickness').value = thicknessDefaults[mat];
+            document.getElementById('thicknessValue').textContent = thicknessDefaults[mat] + ' mm';
+        }
+
+        function loadPreset(type) {
+            const presets = {
+                safe: { mass: 150, height: 0.5, material: 'foam', thickness: 20 },
+                risky: { mass: 200, height: 1.5, material: 'rubber', thickness: 10 },
+                danger: { mass: 250, height: 2.5, material: 'none', thickness: 0 },
+                materials: { mass: 150, height: 1.5, material: 'gel', thickness: 15 }
+            };
+            
+            const preset = presets[type];
+            if (!preset) return;
+            
+            document.getElementById('mass').value = preset.mass;
+            document.getElementById('massValue').textContent = preset.mass + ' g';
+            document.getElementById('height').value = preset.height;
+            document.getElementById('heightValue').textContent = preset.height + ' m';
+            document.getElementById('thickness').value = preset.thickness;
+            document.getElementById('thicknessValue').textContent = preset.thickness + ' mm';
+            
+            state.material = preset.material;
+            document.querySelectorAll('.material-btn').forEach(btn => {
+                btn.classList.remove('selected');
+                if (btn.textContent.toLowerCase() === preset.material) {
+                    btn.classList.add('selected');
+                }
+            });
+            
+            updateFormulas();
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function toggleForces() {
+            state.showForces = !state.showForces;
+            document.getElementById('forceToggle').classList.toggle('active');
+        }
+
+        function toggleSlow() {
+            state.slowMotion = !state.slowMotion;
+            document.getElementById('slowToggle').classList.toggle('active');
+        }
+
+        function drawStaticScene() {
+            simCtx.fillStyle = '#1e293b';
+            simCtx.fillRect(0, 0, simCanvas.width, simCanvas.height);
+            
+            const groundY = simCanvas.height - 60;
+            simCtx.fillStyle = '#334155';
+            simCtx.fillRect(0, groundY, simCanvas.width, 60);
+            
+            simCtx.strokeStyle = 'rgba(148,163,184,0.1)';
+            simCtx.lineWidth = 1;
+            for (let y = 0; y < simCanvas.height; y += 30) {
+                simCtx.beginPath();
+                simCtx.moveTo(0, y);
+                simCtx.lineTo(simCanvas.width, y);
+                simCtx.stroke();
+            }
+            
+            simCtx.fillStyle = '#64748b';
+            simCtx.font = '10px sans-serif';
+            for (let h = 0; h <= 3; h += 0.5) {
+                const y = groundY - h * PIXELS_PER_METER;
+                if (y > 0) {
+                    simCtx.fillText(h + 'm', 5, y);
+                }
+            }
+        }
+
+        function runSimulation() {
+            if (state.isRunning) return;
+            
+            state.isRunning = true;
+            state.phoneBroken = false;
+            document.getElementById('runBtn').disabled = true;
+            document.getElementById('breakPopup').style.display = 'none';
+            
+            const mass = parseFloat(document.getElementById('mass').value) / 1000;
+            const dropHeight = parseFloat(document.getElementById('height').value);
+            const thickness = parseFloat(document.getElementById('thickness').value) / 1000;
+            const material = materials[state.material];
+            
+            physics = {
+                y: dropHeight,
+                vy: 0,
+                time: 0,
+                currentForce: 0,
+                maxForce: 0,
+                maxVelocity: 0,
+                impactStartTime: null,
+                impactEndTime: null,
+                bounceCount: 0,
+                totalEnergy: mass * GRAVITY * dropHeight,
+                forceHistory: [],
+                velocityHistory: [],
+                timeHistory: []
+            };
+            
+            animate(mass, dropHeight, thickness, material);
+        }
+
+        function animate(mass, dropHeight, thickness, material) {
+            if (!state.isRunning) return;
+            
+            const dt = state.slowMotion ? 0.0005 : 0.001;
+            
+            // Gravity
+            physics.vy -= GRAVITY * dt;
+            physics.y += physics.vy * dt;
+            
+            // Keep phone in view
+            if (physics.y > dropHeight + 1) {
+                physics.y = dropHeight + 1;
+                physics.vy = 0;
+            }
+            
+            physics.currentVelocity = Math.abs(physics.vy);
+            physics.maxVelocity = Math.max(physics.maxVelocity, physics.currentVelocity);
+            
+            // Ground collision
+            const groundLevel = thickness;
+            
+            if (physics.y <= groundLevel) {
+                if (!physics.impactStartTime) {
+                    physics.impactStartTime = physics.time;
+                }
+                
+                const penetration = Math.max(0, groundLevel - physics.y);
+                const springForce = material.stiffness * penetration;
+                const dampingForce = material.damping * material.stiffness * Math.abs(physics.vy) * 0.0015;
+                physics.currentForce = springForce + dampingForce;
+                physics.maxForce = Math.max(physics.maxForce, physics.currentForce);
+                
+                // Check for phone break
+                if (physics.maxForce > PHONE_BREAK_FORCE && !state.phoneBroken) {
+                    state.phoneBroken = true;
+                    showPhoneBreak(mass, dropHeight, thickness);
+                }
+                
+                // Apply reaction force
+                const acceleration = physics.currentForce / mass;
+                physics.vy += acceleration * dt;
+                
+                // Energy loss and bounce
+                if (physics.vy > 0) {
+                    physics.vy *= material.restitution;
+                    physics.bounceCount++;
+                    
+                    if (!physics.impactEndTime) {
+                        physics.impactEndTime = physics.time;
+                    }
+                    
+                    // Stop after energy is dissipated
+                    if (physics.bounceCount > 5 || Math.abs(physics.vy) < 0.1) {
+                        finishSimulation(mass, dropHeight, thickness);
+                        return;
+                    }
+                }
+                
+                // Prevent sinking through ground
+                if (physics.y < 0) {
+                    physics.y = 0;
+                }
+            } else {
+                physics.currentForce = mass * GRAVITY;
+            }
+            
+            // Record data
+            physics.forceHistory.push(physics.currentForce);
+            physics.velocityHistory.push(physics.currentVelocity);
+            physics.timeHistory.push(physics.time);
+            
+            if (physics.forceHistory.length > 200) {
+                physics.forceHistory.shift();
+                physics.velocityHistory.shift();
+                physics.timeHistory.shift();
+            }
+            
+            drawFrame(mass, dropHeight, thickness, material);
+            updateLiveDisplays(mass);
+            updateCharts();
+            
+            physics.time += dt;
+            
+            if (physics.time > 5) {
+                finishSimulation(mass, dropHeight, thickness);
+                return;
+            }
+            
+            state.animationId = requestAnimationFrame(() => animate(mass, dropHeight, thickness, material));
+        }
+
+        function drawFrame(mass, dropHeight, thickness, material) {
+            drawStaticScene();
+            
+            const groundY = simCanvas.height - 60;
+            
+            // Draw cushion
+            if (state.material !== 'none' && thickness > 0) {
+                simCtx.fillStyle = material.color;
+                simCtx.globalAlpha = 0.6;
+                const cushionHeight = Math.min(thickness * PIXELS_PER_METER * 10, 60);
+                simCtx.fillRect(0, groundY - cushionHeight, simCanvas.width, cushionHeight);
+                simCtx.globalAlpha = 1;
+            }
+            
+            // Phone position
+            const phoneY = groundY - physics.y * PIXELS_PER_METER - 50;
+            const phoneX = simCanvas.width / 2;
+            
+            // Draw phone
+            simCtx.save();
+            simCtx.translate(phoneX, phoneY);
+            
+            if (state.phoneBroken) {
+                // Broken phone
+                simCtx.fillStyle = '#991b1b';
+                simCtx.fillRect(-20, 0, 40, 50);
+                
+                // Cracked screen
+                simCtx.strokeStyle = '#dc2626';
+                simCtx.lineWidth = 2;
+                simCtx.beginPath();
+                simCtx.moveTo(-15, 10);
+                simCtx.lineTo(0, 25);
+                simCtx.lineTo(15, 15);
+                simCtx.moveTo(-10, 30);
+                simCtx.lineTo(10, 20);
+                simCtx.stroke();
+            } else {
+                // Normal phone
+                simCtx.fillStyle = '#334155';
+                simCtx.fillRect(-20, 0, 40, 50);
+                simCtx.fillStyle = '#60a5fa';
+                simCtx.fillRect(-18, 3, 36, 38);
+                simCtx.fillStyle = '#1e293b';
+                simCtx.fillRect(-8, 43, 16, 4);
+            }
+            
+            simCtx.restore();
+            
+            // Force vector
+            if (state.showForces && physics.currentForce > 10) {
+                simCtx.strokeStyle = physics.currentForce > PHONE_BREAK_FORCE ? '#ef4444' : '#fbbf24';
+                simCtx.lineWidth = 3;
+                simCtx.beginPath();
+                simCtx.moveTo(phoneX, phoneY + 25);
+                const forceScale = Math.min(physics.currentForce * 0.2, 100);
+                simCtx.lineTo(phoneX, phoneY + 25 - forceScale);
+                simCtx.stroke();
+                
+                simCtx.fillStyle = simCtx.strokeStyle;
+                simCtx.font = '12px sans-serif';
+                simCtx.fillText(physics.currentForce.toFixed(0) + ' N', phoneX + 10, phoneY + 20);
+            }
+        }
+
+        function updateLiveDisplays(mass) {
+            document.getElementById('liveHeight').textContent = physics.y.toFixed(2) + ' m';
+            document.getElementById('liveVelocity').textContent = physics.currentVelocity.toFixed(2) + ' m/s';
+            const ke = 0.5 * mass * physics.currentVelocity * physics.currentVelocity;
+            document.getElementById('liveKE').textContent = ke.toFixed(2) + ' J';
+            document.getElementById('liveForce').textContent = physics.currentForce.toFixed(1) + ' N';
+            
+            document.getElementById('fForceValue').textContent = physics.maxForce.toFixed(1);
+            const status = physics.maxForce > PHONE_BREAK_FORCE ? 'BROKEN!' : 'SAFE';
+            const color = physics.maxForce > PHONE_BREAK_FORCE ? 'var(--danger)' : 'var(--success)';
+            document.getElementById('fSafetyStatus').textContent = status;
+            document.getElementById('fSafetyStatus').style.color = color;
+        }
+
+        function updateCharts() {
+            // Force chart with threshold line
+            forceCtx.fillStyle = '#334155';
+            forceCtx.fillRect(0, 0, forceChart.width, forceChart.height);
+            
+            if (physics.forceHistory.length > 1) {
+                const padding = 10;
+                const width = forceChart.width - padding * 2;
+                const height = forceChart.height - padding * 2;
+                const maxForce = Math.max(250, ...physics.forceHistory);
+                
+                // Threshold line
+                const thresholdY = padding + height - (PHONE_BREAK_FORCE / maxForce) * height;
+                forceCtx.strokeStyle = '#ef4444';
+                forceCtx.lineWidth = 1;
+                forceCtx.setLineDash([5, 5]);
+                forceCtx.beginPath();
+                forceCtx.moveTo(padding, thresholdY);
+                forceCtx.lineTo(forceChart.width - padding, thresholdY);
+                forceCtx.stroke();
+                forceCtx.setLineDash([]);
+                
+                // Force line
+                forceCtx.strokeStyle = '#fbbf24';
+                forceCtx.lineWidth = 2;
+                forceCtx.beginPath();
+                physics.forceHistory.forEach((force, i) => {
+                    const x = padding + (i / (physics.forceHistory.length - 1)) * width;
+                    const y = padding + height - (force / maxForce) * height;
+                    i === 0 ? forceCtx.moveTo(x, y) : forceCtx.lineTo(x, y);
+                });
+                forceCtx.stroke();
+            }
+            
+            // Velocity chart
+            drawLineChart(velocityCtx, velocityChart, physics.velocityHistory, '#60a5fa', physics.maxVelocity * 1.1);
+        }
+
+        function drawLineChart(ctx, canvas, data, color, maxValue) {
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            if (data.length < 2) return;
+            
+            const padding = 10;
+            const width = canvas.width - padding * 2;
+            const height = canvas.height - padding * 2;
+            
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            data.forEach((value, i) => {
+                const x = padding + (i / (data.length - 1)) * width;
+                const y = padding + height - (value / maxValue) * height;
+                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+            });
+            
+            ctx.stroke();
+        }
+
+        function showPhoneBreak(mass, dropHeight, thickness) {
+            const popup = document.getElementById('breakPopup');
+            const details = document.getElementById('breakDetails');
+            details.innerHTML = `Force: ${physics.maxForce.toFixed(0)}N<br>Height: ${dropHeight}m<br>Material: ${state.material}`;
+            popup.style.display = 'block';
+        }
+
+        function finishSimulation(mass, dropHeight, thickness) {
+            state.isRunning = false;
+            document.getElementById('runBtn').disabled = false;
+            
+            const impactDuration = physics.impactEndTime ? 
+                (physics.impactEndTime - physics.impactStartTime) * 1000 : 10;
+            
+            const initialPE = mass * GRAVITY * dropHeight;
+            const finalKE = 0.5 * mass * physics.maxVelocity * physics.maxVelocity;
+            const energyAbsorbed = ((initialPE - finalKE) / initialPE * 100) || 0;
+            
+            document.getElementById('peakForce').textContent = physics.maxForce.toFixed(1);
+            document.getElementById('phoneStatus').textContent = state.phoneBroken ? '💔 BROKEN' : '✅ SAFE';
+            document.getElementById('phoneStatus').style.color = state.phoneBroken ? 'var(--danger)' : 'var(--success)';
+            document.getElementById('impactTime').textContent = impactDuration.toFixed(1);
+            document.getElementById('energyAbsorbed').textContent = Math.abs(energyAbsorbed).toFixed(1);
+            
+            state.trialCounter++;
+            const trial = {
+                id: Date.now(),
+                num: state.trialCounter,
+                mass: mass * 1000,
+                height: dropHeight,
+                material: state.material,
+                thickness: thickness * 1000,
+                force: physics.maxForce,
+                broken: state.phoneBroken,
+                absorbed: Math.abs(energyAbsorbed)
+            };
+            
+            state.trials.push(trial);
+            if (state.trials.length > 10) {
+                state.trials = state.trials.slice(-10);
+            }
+            
+            updateTrialsTable();
+            drawComparisonChart();
+        }
+
+        function updateTrialsTable() {
+            const tbody = document.getElementById('trialsBody');
+            tbody.innerHTML = '';
+            
+            let minForce = Infinity;
+            let bestTrial = null;
+            state.trials.forEach(t => {
+                if (t.force < minForce && !t.broken) {
+                    minForce = t.force;
+                    bestTrial = t;
+                }
+            });
+            
+            [...state.trials].reverse().forEach(trial => {
+                const row = document.createElement('div');
+                row.className = 'trial-row';
+                if (trial === bestTrial) row.className += ' best';
+                
+                const setup = `${trial.height}m ${trial.material}`;
+                const status = trial.broken ? '💔' : '✅';
+                
+                row.innerHTML = `
+                    <div>#${trial.num}</div>
+                    <div style="font-size: 0.7rem;">${setup}</div>
+                    <div>${trial.force.toFixed(0)}N</div>
+                    <div>${status}</div>
+                    <button class="delete-btn" onclick="deleteTrial(${trial.id})">×</button>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function drawComparisonChart() {
+            comparisonCtx.fillStyle = '#334155';
+            comparisonCtx.fillRect(0, 0, comparisonChart.width, comparisonChart.height);
+            
+            if (state.trials.length === 0) return;
+            
+            const padding = 15;
+            const width = comparisonChart.width - padding * 2;
+            const height = comparisonChart.height - padding * 2;
+            
+            const trials = state.trials.slice(-5);
+            const maxForce = Math.max(250, ...trials.map(t => t.force));
+            
+            // Threshold line
+            const thresholdY = padding + height - (PHONE_BREAK_FORCE / maxForce) * height;
+            comparisonCtx.strokeStyle = '#ef4444';
+            comparisonCtx.lineWidth = 2;
+            comparisonCtx.setLineDash([5, 5]);
+            comparisonCtx.beginPath();
+            comparisonCtx.moveTo(padding, thresholdY);
+            comparisonCtx.lineTo(comparisonChart.width - padding, thresholdY);
+            comparisonCtx.stroke();
+            comparisonCtx.setLineDash([]);
+            
+            // Bars
+            const barWidth = width / trials.length * 0.8;
+            const gap = width / trials.length * 0.2;
+            
+            trials.forEach((trial, i) => {
+                const barHeight = (trial.force / maxForce) * height;
+                const x = padding + i * (barWidth + gap) + gap/2;
+                const y = padding + height - barHeight;
+                
+                comparisonCtx.fillStyle = trial.broken ? '#ef4444' : materials[trial.material].color;
+                comparisonCtx.fillRect(x, y, barWidth, barHeight);
+                
+                comparisonCtx.fillStyle = '#f1f5f9';
+                comparisonCtx.font = '10px sans-serif';
+                comparisonCtx.textAlign = 'center';
+                comparisonCtx.fillText(trial.force.toFixed(0) + 'N', x + barWidth/2, y - 2);
+            });
+        }
+
+        function deleteTrial(id) {
+            state.trials = state.trials.filter(t => t.id !== id);
+            updateTrialsTable();
+            drawComparisonChart();
+        }
+
+        function resetSimulation() {
+            state.isRunning = false;
+            state.phoneBroken = false;
+            document.getElementById('runBtn').disabled = false;
+            document.getElementById('breakPopup').style.display = 'none';
+            
+            if (state.animationId) {
+                cancelAnimationFrame(state.animationId);
+            }
+            
+            physics = {
+                y: 0,
+                vy: 0,
+                time: 0,
+                currentForce: 0,
+                maxForce: 0,
+                maxVelocity: 0,
+                impactStartTime: null,
+                impactEndTime: null,
+                bounceCount: 0,
+                totalEnergy: 0,
+                forceHistory: [],
+                velocityHistory: [],
+                timeHistory: []
+            };
+            
+            document.getElementById('liveHeight').textContent = '0.00 m';
+            document.getElementById('liveVelocity').textContent = '0.00 m/s';
+            document.getElementById('liveKE').textContent = '0.00 J';
+            document.getElementById('liveForce').textContent = '0.0 N';
+            
+            drawStaticScene();
+            forceCtx.fillStyle = '#334155';
+            forceCtx.fillRect(0, 0, forceChart.width, forceChart.height);
+            velocityCtx.fillStyle = '#334155';
+            velocityCtx.fillRect(0, 0, velocityChart.width, velocityChart.height);
+        }
+
+        function exportCSV() {
+            if (state.trials.length === 0) {
+                alert('No data to export!');
+                return;
+            }
+            
+            let csv = 'Trial,Mass(g),Height(m),Material,Thickness(mm),PeakForce(N),PhoneBroken,EnergyAbsorbed(%)\n';
+            state.trials.forEach(t => {
+                csv += `${t.num},${t.mass},${t.height},${t.material},${t.thickness},${t.force.toFixed(2)},${t.broken},${t.absorbed.toFixed(2)}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `phone_drop_data_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+        }
+
+        function exportJSON() {
+            if (state.trials.length === 0) {
+                alert('No data to export!');
+                return;
+            }
+            
+            const exportData = {
+                date: new Date().toISOString(),
+                breakingThreshold: PHONE_BREAK_FORCE,
+                trials: state.trials,
+                summary: {
+                    totalTrials: state.trials.length,
+                    brokenPhones: state.trials.filter(t => t.broken).length,
+                    safeDrops: state.trials.filter(t => !t.broken).length,
+                    lowestSafeForce: Math.min(...state.trials.filter(t => !t.broken).map(t => t.force))
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `phone_drop_data_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+        }
+    </script>
+</body>
+</html>
