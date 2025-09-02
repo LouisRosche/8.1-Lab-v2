@@ -673,6 +673,8 @@
         const PHONE_BREAK_FORCE = 200; // Newtons
         const GRAVITY = 9.81; // m/s²
         const PIXELS_PER_METER = 100;
+        const PHONE_WIDTH = 40;
+        const PHONE_HEIGHT = 80;
 
         // Global state
         let state = {
@@ -795,17 +797,19 @@
             });
         }
 
+// REPLACE your entire function with this one.
 function updateFormulas() {
-    const material = materials[state.material];
+    const mass = parseFloat(document.getElementById('mass').value) / 1000;
+    const height = parseFloat(document.getElementById('height').value);
 
-    // This new logic checks if a material exists before trying to get its properties.
-    const stiffness = material ? material.stiffness : 0;
-    const damping = material ? material.damping : 0;
-    const thickness = document.getElementById('caseThickness').value;
+    const impactVelocity = Math.sqrt(2 * GRAVITY * height);
+    const impactKE = 0.5 * mass * impactVelocity * impactVelocity;
 
-    document.getElementById('formula_k').textContent = stiffness.toFixed(0);
-    document.getElementById('formula_c').textContent = damping.toFixed(1);
-    document.getElementById('formula_d').textContent = thickness;
+    document.getElementById('fHeight').textContent = height.toFixed(1);
+    document.getElementById('fMass').textContent = mass.toFixed(3);
+    document.getElementById('fVel').textContent = impactVelocity.toFixed(2);
+    document.getElementById('fVelCalc').textContent = impactVelocity.toFixed(2);
+    document.getElementById('fKE').textContent = impactKE.toFixed(2);
 }
 
         function selectMaterial(event, mat) {
